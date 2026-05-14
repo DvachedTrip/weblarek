@@ -19,7 +19,7 @@ export interface IProduct {
 }
 
 export interface IBuyer {
-    payment: TPayment;
+    payment: TPayment | null;
     email: string;
     phone: string;
     address: string;
@@ -40,6 +40,6 @@ export interface IOrderResponse {
     total: number;
 }
 
-export type TPayment = "card" | "cash" | null;
+export type TPayment = "online" | "offline";
 
 export type TValidateErrors = Partial<Record<keyof IBuyer, string>>;

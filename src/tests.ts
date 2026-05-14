@@ -1,0 +1,108 @@
+import { Cart } from "./components/models/Cart";
+import { Customer } from "./components/models/Customer";
+import { Api } from "./components/base/Api";
+import { ApiLarek } from "./components/сommunication/ApiLarek";
+import { Catalog } from "./components/models/Catalog";
+import { API_URL } from "./utils/constants";
+
+const products = new Catalog();
+
+const api = new Api(API_URL);
+const apiLarek = new ApiLarek(api);
+
+const fetchProducts = async () => {
+    try {
+        const response = await apiLarek.getProducts();
+        products.setProducts(response.items);
+        console.log(response);
+    } catch (e) {
+        console.log("Что-то не так");
+    }
+};
+
+function TestCustomer() {
+    console.log("Тестирование данных покупателя...");
+    const customer = new Customer();
+    customer.saveEmail("test@example.com");
+    customer.savePhone("1234567890");
+    customer.saveAddress("123 Main St");
+    customer.savePaymentMethod("online");
+    console.log("Данные покупателя:", customer.getCustomerData());
+    console.log("Ошибки в данных покупателя:", customer.validateCustomerData());
+    customer.clearCustomerData();
+    console.log("Данные покупателя после очистки:", customer.getCustomerData());
+    console.log("Тестирование данных покупателя завершено.");
+}
+
+function TestCart() {
+    console.log("Тестирование корзины...");
+    const cart = new Cart();
+    cart.addProduct({
+        id: "c101ab44-ed99-4a54-990d-47aa2bb4e7d9",
+        description:
+            "Лизните этот леденец, чтобы мгновенно запоминать и узнавать любой цветовой код CSS.",
+        image: "/Shell.svg",
+        title: "HEX-леденец",
+        category: "другое",
+        price: 1450,
+    });
+    console.log("Корзина:", cart.getCart());
+    console.log("Общая стоимость:", cart.getAllPrice());
+    console.log("Количество товаров:", cart.getQuantity());
+    console.log(
+        "Товар в корзине:",
+        cart.isInCart("c101ab44-ed99-4a54-990d-47aa2bb4e7d9"),
+    );
+    cart.delProduct("c101ab44-ed99-4a54-990d-47aa2bb4e7d9");
+    console.log("Корзина после удаления товара:", cart.getCart());
+    console.log("Тестирование корзины завершено.");
+}
+
+async function TestApiLarek() {
+    console.log("Тестирование API Larek...");
+    try {
+        const response = await apiLarek.getProducts();
+        console.log("Ответ от API Larek:", response);
+    } catch (e) {
+        console.error("Ошибка при получении продуктов:", e);
+    }
+
+    try {
+        const orderResponse = await apiLarek.postOrder({
+            total: 1450,
+            items: ["c101ab44-ed99-4a54-990d-47aa2bb4e7d9"],
+            payment: "online",
+            email: "test@example.com",
+            phone: "1234567890",
+            address: "123 Main St",
+        });
+        console.log("Ответ от API Larek (заказ):", orderResponse);
+    } catch (e) {
+        console.error("Ошибка при отправке заказа:", e);
+    }
+    console.log("Конец тестирования API Larek...");
+}
+
+async function testCatalog() {
+    console.log("Тестирование каталога...");
+    await fetchProducts();
+    console.log("Товары в каталоге:", products.getProducts());
+    const selectedProduct = products.findSelectedProducts(
+        "c101ab44-ed99-4a54-990d-47aa2bb4e7d9",
+    );
+    if (selectedProduct) {
+        console.log("Найденный товар:", selectedProduct);
+        products.setSelectedProduct(selectedProduct);
+        console.log("Выбранный товар:", products.getSelectedProduct());
+    } else {
+        console.log("Товар не найден");
+    }
+    console.log("Тестирование каталога завершено.");
+}
+
+export async function runTests() {
+    await testCatalog();
+    TestCustomer();
+    TestCart();
+    await TestApiLarek();
+}

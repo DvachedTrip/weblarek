@@ -125,7 +125,7 @@ interface IProduct {
 
 ```
 interface IBuyer {
-  payment: TPayment;
+  payment: TPayment | null;
   email: string;
   phone: string;
   address: string;
@@ -162,7 +162,7 @@ export interface IOrderRequest extends IBuyer {
 Метод оплаты:
 
 ```
-type TPayment = payment: "card" | "cash" | null
+type TPayment = payment: "online" | "offline"
 
 ```
 

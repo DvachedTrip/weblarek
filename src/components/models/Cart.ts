@@ -1,13 +1,9 @@
 import { IProduct } from "@/types/index";
 
 export class Cart {
-    private products: IProduct[];
+    private products: IProduct[] = [];
 
-    constructor(products: IProduct[]) {
-        this.products = products;
-    }
-
-    getProducts(): IProduct[] {
+    getCart(): IProduct[] {
         return this.products;
     }
 

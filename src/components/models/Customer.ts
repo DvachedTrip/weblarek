@@ -44,15 +44,15 @@ export class Customer {
             errors.payment = "Укажите тип оплаты";
         }
 
-        if (this.customer.email.trim() === "") {
+        if (!this.customer.email.trim()) {
             errors.email = "Укажите email";
         }
 
-        if (this.customer.phone.trim() === "") {
+        if (!this.customer.phone.trim()) {
             errors.phone = "Укажите номер телефона";
         }
 
-        if (this.customer.address.trim() === "") {
+        if (!this.customer.address.trim()) {
             errors.address = "Укажите адрес";
         }
 

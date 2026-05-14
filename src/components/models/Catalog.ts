@@ -1,13 +1,8 @@
 import { IProduct } from "@/types/index";
 
 export class Catalog {
-    private products: IProduct[];
-    private selectedProduct: IProduct | null;
-
-    constructor(products: IProduct[], selectedProduct: IProduct | null) {
-        this.products = products;
-        this.selectedProduct = selectedProduct;
-    }
+    private products: IProduct[] = [];
+    private selectedProduct: IProduct | null = null;
 
     public setProducts(products: IProduct[]): void {
         this.products = products;
