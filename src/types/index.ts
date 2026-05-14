@@ -25,6 +25,21 @@ export interface IBuyer {
     address: string;
 }
 
+export interface IOrderRequest extends IBuyer {
+    total: number;
+    items: string[];
+}
+
+export interface IProductsResponse {
+    total: number;
+    items: IProduct[];
+}
+
+export interface IOrderResponse {
+    id: string;
+    total: number;
+}
+
 export type TPayment = "card" | "cash" | null;
 
 export type TValidateErrors = Partial<Record<keyof IBuyer, string>>;

@@ -132,6 +132,33 @@ interface IBuyer {
 }
 ```
 
+Ответ метода пост класса ApiLarek:
+
+```
+export interface IProductsResponse {
+    total: number;
+    items: IProduct[];
+}
+```
+
+Ответ метода гет класса ApiLarek:
+
+```
+export interface IOrderResponse {
+    id: string;
+    total: number;
+}
+```
+
+Пост запрос пост класса ApiLarek:
+
+```
+export interface IOrderRequest extends IBuyer {
+    total: number;
+    items: string[];
+}
+```
+
 Метод оплаты:
 
 ```
@@ -202,3 +229,16 @@ type TValidateErrors = Partial<Record<keyof IBuyer, string>>;
 `getCustomerData(): IBuyer` - получение всех данных покупателя
 `clearCustomerData(): void` - очистка данных покупателя
 `validateCustomerData(): TValidateErrors` - валидация данных пользователя
+
+### Слой коммуникации
+
+#### Класс ApiLarek
+
+Класс будет использовать композицию, чтобы выполнить запрос на сервер с помощью метода get класса Api и будет получать с сервера объект с массивом товаров
+
+Поле:
+`private Api: IApi` - экземпляр класса API в который мы закинули нужный нам юрл
+
+Методы:
+`getProducts(): Promise<IProductsResponse>` - обращается к методу гет класса Api с эндпоинтом на гет запрос и возвращает объект с кол-вом товаров и самими товарами
+`postOrder(data: IOrderRequest): Promise<IOrderResponse>` - обращается к методу пост класса Api с эндпоинтом на пост запрос и возвраащет кол-во продуктов с заказа и их айди
