@@ -13,10 +13,10 @@ export class ApiLarek {
     }
 
     getProducts(): Promise<IProductsResponse> {
-        return this.api.get("/product/");
+        return this.api.get<IProductsResponse>("/product/");
     }
 
     postOrder(data: IOrderRequest): Promise<IOrderResponse> {
-        return this.api.post("/order/", data);
+        return this.api.post<IOrderResponse>("/order/", data);
     }
 }

@@ -1,24 +1,10 @@
+import { Api } from "./components/base/Api";
 import { Cart } from "./components/models/Cart";
 import { Customer } from "./components/models/Customer";
-import { Api } from "./components/base/Api";
 import { ApiLarek } from "./components/сommunication/ApiLarek";
-import { Catalog } from "./components/models/Catalog";
 import { API_URL } from "./utils/constants";
-
-const products = new Catalog();
-
-const api = new Api(API_URL);
-const apiLarek = new ApiLarek(api);
-
-const fetchProducts = async () => {
-    try {
-        const response = await apiLarek.getProducts();
-        products.setProducts(response.items);
-        console.log(response);
-    } catch (e) {
-        console.log("Что-то не так");
-    }
-};
+import { Catalog } from "./components/models/Catalog";
+import { apiProducts } from "./utils/data";
 
 function TestCustomer() {
     console.log("Тестирование данных покупателя...");
@@ -59,6 +45,8 @@ function TestCart() {
 }
 
 async function TestApiLarek() {
+    const api = new Api(API_URL);
+    const apiLarek = new ApiLarek(api);
     console.log("Тестирование API Larek...");
     try {
         const response = await apiLarek.getProducts();
@@ -85,7 +73,8 @@ async function TestApiLarek() {
 
 async function testCatalog() {
     console.log("Тестирование каталога...");
-    await fetchProducts();
+    const products = new Catalog();
+    products.setProducts(apiProducts.items);
     console.log("Товары в каталоге:", products.getProducts());
     const selectedProduct = products.findSelectedProducts(
         "c101ab44-ed99-4a54-990d-47aa2bb4e7d9",

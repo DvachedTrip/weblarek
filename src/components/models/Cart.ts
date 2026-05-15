@@ -12,7 +12,7 @@ export class Cart {
     }
 
     delProduct(id: string): void {
-        this.products.filter((product) => product.id !== id);
+        this.products = this.products.filter((product) => product.id !== id);
     }
 
     clearCart(): void {
