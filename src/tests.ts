@@ -90,7 +90,7 @@ async function testCatalog() {
 }
 
 export async function runTests() {
-    await testCatalog();
+    testCatalog();
     TestCustomer();
     TestCart();
     await TestApiLarek();
