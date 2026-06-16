@@ -18,7 +18,7 @@ export class ApiLarek {
   private transformProduct(product: IProduct): IProduct {
     return {
       ...product,
-      image: this.cdnUrl + product.image,
+      image: this.cdnUrl + product.image.replace(".svg", ".png"),
     };
   }
 
