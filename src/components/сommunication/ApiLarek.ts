@@ -1,22 +1,35 @@
 import {
-    IApi,
-    IOrderRequest,
-    IOrderResponse,
-    IProductsResponse,
+  IApi,
+  IOrderRequest,
+  IOrderResponse,
+  IProductsResponse,
+  IProduct,
 } from "@/types";
 
 export class ApiLarek {
-    private api: IApi;
+  private api: IApi;
+  private cdnUrl: string;
 
-    constructor(api: IApi) {
-        this.api = api;
-    }
+  constructor(api: IApi, cdnUrl: string) {
+    this.api = api;
+    this.cdnUrl = cdnUrl;
+  }
 
-    getProducts(): Promise<IProductsResponse> {
-        return this.api.get<IProductsResponse>("/product/");
-    }
+  private transformProduct(product: IProduct): IProduct {
+    return {
+      ...product,
+      image: this.cdnUrl + product.image,
+    };
+  }
 
-    postOrder(data: IOrderRequest): Promise<IOrderResponse> {
-        return this.api.post<IOrderResponse>("/order/", data);
-    }
+  getProducts(): Promise<IProductsResponse> {
+    return this.api.get<IProductsResponse>("/product/").then((data) => ({
+      ...data,
+      items: data.items.map((product) => this.transformProduct(product)),
+    }));
+  }
+
+  postOrder(data: IOrderRequest): Promise<IOrderResponse> {
+    return this.api.post<IOrderResponse>("/order/", data);
+  }
 }

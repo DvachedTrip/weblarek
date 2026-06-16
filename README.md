@@ -242,3 +242,102 @@ type TValidateErrors = Partial<Record<keyof IBuyer, string>>;
 Методы:
 `getProducts(): Promise<IProductsResponse>` - обращается к методу гет класса Api с эндпоинтом на гет запрос и возвращает объект с кол-вом товаров и самими товарами
 `postOrder(data: IOrderRequest): Promise<IOrderResponse>` - обращается к методу пост класса Api с эндпоинтом на пост запрос и возвраащет кол-во продуктов с заказа и их айди
+
+### Слой View
+
+#### Компонент Header
+
+Интерфейс `IHeaderData` {
+`counter: number;`
+}
+
+Класс `HeaderView`
+Отображает шапку сайта и состояние корзины.
+
+Поля:
+
+```
+basketButton: HTMLButtonElement
+counterElement: HTMLElement
+```
+
+Методы:
+
+```
+setCounter(value: number): void — обновляет счетчик товаров
+```
+
+События:
+
+`basket:open` — при клике на корзину
+
+#### Компонент Gallery
+
+Интерфейс `IGalleryData`
+
+```
+interface IGalleryData {
+  catalog: HTMLElement[];
+}
+```
+
+Класс `GalleryView`
+Отвечает за отображение списка товаров.
+
+Поля:
+
+`container: HTMLElement` — контейнер галереи
+
+Методы:
+
+`setCatalog(items: HTMLElement[]): void` — передача списка карточек
+
+События:
+
+`product:select` — выбор товара
+
+#### Карточки товаров
+
+Все карточки наследуются от общего базового класса.
+
+Базовый класс `CardView<T>`
+
+Общий функционал карточек:
+
+установка названия
+установка цены
+обработка кликов
+
+Поля:
+
+```
+title: HTMLElement
+price: HTMLElement
+```
+
+Методы:
+
+```
+setTitle(value: string): void
+setPrice(value: number | null): void
+```
+
+##### Карточка в галерее
+
+`CardCatalogView`
+
+Карточка в галерее.
+
+Поля:
+
+```
+
+```
+
+Дополнительно:
+
+клик → открыть модалку товара
+
+События:
+
+product:open
