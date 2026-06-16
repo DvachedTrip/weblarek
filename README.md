@@ -251,7 +251,7 @@ type TValidateErrors = Partial<Record<keyof IBuyer, string>>;
 `counter: number;`
 }
 
-Класс `HeaderView`
+Класс `Header`
 Отображает шапку сайта и состояние корзины.
 
 Поля:
@@ -264,25 +264,21 @@ counterElement: HTMLElement
 Методы:
 
 ```
-setCounter(value: number): void — обновляет счетчик товаров
+set counter(value: number): void — обновляет счетчик товаров
 ```
 
 События:
 
-`basket:open` — при клике на корзину
+`basket:open` — при клике на корзину. Презентер открывает окно корзины.
 
-#### Компонент Gallery
+#### Компонент CatalogView
 
-Интерфейс `IGalleryData`
-
-```
-interface IGalleryData {
-  catalog: HTMLElement[];
+Интерфейс `ICatalogView` {
+`catalog: HTMLElement[];`
 }
-```
 
-Класс `GalleryView`
-Отвечает за отображение списка товаров.
+Класс `CatalogView`
+Отвечает за отображение списка карточек в галерее.
 
 Поля:
 
@@ -290,54 +286,274 @@ interface IGalleryData {
 
 Методы:
 
-`setCatalog(items: HTMLElement[]): void` — передача списка карточек
+```
+set catalog(value: HTMLElement[]): void — очистка контейнера и добавление карточек
+```
 
 События:
 
-`product:select` — выбор товара
+`CatalogView` не генерирует события сам по себе. Он рендерит карточки, которые создаёт презентер.
 
-#### Карточки товаров
-
-Все карточки наследуются от общего базового класса.
+#### Базовый класс карточки
 
 Базовый класс `CardView<T>`
 
 Общий функционал карточек:
 
-установка названия
-установка цены
-обработка кликов
+- установка названия
+- установка цены
+- хранение id товара
 
 Поля:
 
 ```
 title: HTMLElement
 price: HTMLElement
+productId: string
 ```
 
 Методы:
 
 ```
-setTitle(value: string): void
-setPrice(value: number | null): void
+set title(value: string): void
+set price(value: number | null): void
+set id(value: string): void
 ```
 
 ##### Карточка в галерее
 
-`CardCatalogView`
+Класс `CardCatalogView`
 
-Карточка в галерее.
+Дополнительный функционал:
+
+- отображает категорию товара
+- отображает изображение товара
+- при клике генерирует событие выбора товара
+
+События:
+
+`product:select` — клик по карточке. Презентер обрабатывает это событие, выбирает товар и открывает модальное окно с описанием.
+
+##### Карточка товара с описанием
+
+Класс `CardDescriptionView`
+
+Дополнительный функционал:
+
+- отображает категорию
+- отображает изображение
+- отображает описание товара
+- отображает цену и название
+
+События:
+
+`CardDescriptionView` не генерирует события сам по себе. Он служит как контент для модального окна товара.
+
+##### Карточка корзины
+
+Класс `CardBasketView`
+
+Дополнительный функционал:
+
+- отображает порядок товара в корзине
+- кнопка удаления товара
+
+События:
+
+`product:delete` — клик по кнопке удаления. Презентер удаляет товар из корзины и открывает обновлённую корзину.
+
+#### Компонент Modal
+
+Интерфейс `IModal` {
+`content: string | HTMLElement | HTMLFormElement;`
+}
+
+Класс `Modal`
+Отвечает за показ модального окна и закрытие.
 
 Поля:
 
 ```
-
+contentElement: HTMLElement
+closeButton: HTMLButtonElement
 ```
 
-Дополнительно:
+Методы:
 
-клик → открыть модалку товара
+```
+set content(value: string | HTMLElement): void — вставляет HTML или DOM-элемент
+open(): void — показывает модалку
+close(): void — закрывает модалку и очищает содержимое
+```
 
 События:
 
-product:open
+`modal:close` — клик по кнопке закрытия. Презентер закрывает модальное окно.
+
+#### Компонент BuyView
+
+Интерфейс `IBuyData` {
+`id?: string;
+price?: number | null;
+content?: HTMLElement;`
+}
+
+Класс `BuyView`
+Отвечает за кнопку покупки товара и переключение на удаление из корзины.
+
+Поля:
+
+```
+actionButton: HTMLButtonElement
+productId: string
+```
+
+Поведение:
+
+- отображает кнопку `В корзину` или `Удалить из корзины`
+- если товара нет в наличии, блокирует кнопку
+- если товар уже в корзине, предлагает удалить его
+
+События:
+
+`product:buy` — клик по кнопке, когда товара нет в корзине
+`product:delete` — клик по кнопке, когда товар уже есть в корзине
+
+Особенность:
+
+`BuyView` подписан на событие `cart:changed`, чтобы обновлять состояние кнопки, однако в текущей реализации `Cart` не генерирует это событие; управление корзиной происходит из презентера.
+
+#### Компонент BascetView
+
+Интерфейс `IBasketView` {
+`products: HTMLElement[];
+total: string;`
+}
+
+Класс `BascetView`
+Отвечает за отображение списка товаров корзины и переход к оформлению заказа.
+
+Поля:
+
+```
+listElement: HTMLElement
+totalElement: HTMLElement
+checkoutButton: HTMLButtonElement
+```
+
+Методы:
+
+```
+set products(value: HTMLElement[]): void — добавляет элементы в список
+set total(value: string): void — устанавливает итоговую сумму
+set checkoutDisabled(value: boolean): void — отключает кнопку оформления
+```
+
+События:
+
+`basket:checkout` — клик по кнопке оформления заказа. Презентер открывает форму оплаты.
+
+#### Базовый класс формы
+
+Базовый класс `FormView<T>`
+
+Обрабатывает поведение всех форм:
+
+- отправку формы через кнопку submit
+- ввод данных в поля
+- отображение ошибок
+- блокировку кнопки отправки
+
+Поля:
+
+```
+submitButton: HTMLButtonElement
+errorELement: HTMLElement
+formElement: HTMLFormElement
+```
+
+Поведение:
+
+- при клике на кнопку вызывает `events.emit('${formName}:submit')`
+- при вводе в поле вызывает `events.emit('${formName}:change', { field, value })`
+
+Состояние:
+
+```
+set valid(value: boolean): void
+set error(value: string): void
+```
+
+#### Компонент FormPaymentView
+
+Интерфейс `IFormPayment` {
+`payment: IBuyer['payment'];
+address: IBuyer['address'];`
+}
+
+Класс `FormPaymentView`
+Отвечает за выбор способа оплаты и ввод адреса доставки.
+
+События:
+
+`payment:change` — выбор способа оплаты кнопками «карта»/«наличка»
+`order:change` — ввод адреса в поле формы
+`order:submit` — отправка формы оплаты
+
+#### Компонент FormContactsView
+
+Интерфейс `IFormContacts` {
+`email: IBuyer['email'];
+phone: IBuyer['phone'];`
+}
+
+Класс `FormContactsView`
+Отвечает за ввод и валидацию контактных данных покупателя.
+
+События:
+
+`contacts:change` — ввод email или телефона
+`contacts:submit` — отправка контактной формы
+
+#### Компонент FinishBuyViews
+
+Интерфейс `FinishBuyInterface` {
+`total: string;`
+}
+
+Класс `FinishBuyViews`
+Отвечает за экран успешного заказа.
+
+Поля:
+
+```
+totalEl: HTMLParagraphElement
+closeButton: HTMLButtonElement
+```
+
+События:
+
+`finishBuy:close` — клик по кнопке закрытия. Презентер закрывает модальное окно.
+
+### Событийный поток View → Presenter
+
+Класс `src/main.ts` выступает как презентер: он подписывается на события от View, обновляет модели и рендерит новые представления.
+
+События, обрабатываемые презентером:
+
+- `catalog:changed` — рендерит карточки каталога через `CatalogView` и `CardCatalogView`
+- `product:select` — находит товар, сохраняет его как выбранный, создает `CardDescriptionView`, `BuyView`, рендерит их в `Modal`
+- `modal:close` — закрывает модальное окно
+- `basket:open` — собирает товары из `Cart`, создает `CardBasketView` для каждого товара, рендерит `BascetView` в `Modal`
+- `product:buy` — добавляет товар в `Cart`, обновляет счетчик в `Header`, закрывает модалку
+- `product:delete` — удаляет товар из `Cart`, обновляет счетчик в `Header`, затем повторно открывает корзину
+- `basket:checkout` — открывает форму оплаты `FormPaymentView` в модальном окне
+- `payment:change` — сохраняет способ оплаты в `Customer`, перерисовывает форму оплаты и запускает валидацию
+- `order:change` — при изменении адреса сохраняет его в `Customer` и запускает валидацию
+- `customer:validated` — получает ошибки валидации от `Customer` и обновляет состояние `FormPaymentView` и `FormContactsView`
+- `order:submit` — показывает форму контактов `FormContactsView` в модальном окне
+- `contacts:change` — сохраняет email/phone в `Customer` и запускает валидацию
+- `contacts:submit` — собирает данные покупателя и содержимое корзины, отправляет заказ через `ApiLarek`, очищает корзину, обновляет счетчик и показывает `FinishBuyViews`
+- `finishBuy:close` — закрывает модальное окно
+
+Таким образом, `View` отвечает за пользовательский интерфейс и генерацию событий, а презентер в `main.ts` решает, что делать при каждом событии: обновляет модели, выбирает нужный компонент для рендера и управляет модальными окнами.
