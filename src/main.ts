@@ -285,7 +285,7 @@ events.on("customer:changed", (customerData: IBuyer) => {
   renderCustomerData(customerData);
 });
 
-events.on("customer:validated", (errors: TValidateErrors) => {
+events.on("customer:validate", (errors: TValidateErrors) => {
   const isPaymentFilled = !errors.payment;
   const isAddressFilled = !errors.address;
   const isEmailFilled = !errors.email;

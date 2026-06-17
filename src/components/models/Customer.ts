@@ -63,7 +63,7 @@ export class Customer {
       errors.address = "Укажите адрес";
     }
 
-    this.events.emit("customer:validated", errors);
+    this.events.emit("customer:validate", errors);
 
     return errors;
   }
