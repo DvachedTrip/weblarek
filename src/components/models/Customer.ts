@@ -12,22 +12,22 @@ export class Customer {
 
   savePaymentMethod(paymentMethod: TPayment): void {
     this.customer.payment = paymentMethod;
-    // this.events.emit("customer:changed", this.customer);
+    this.emitChanges();
   }
 
   saveEmail(email: string): void {
     this.customer.email = email;
-    // this.events.emit("customer:changed", this.customer);
+    this.emitChanges();
   }
 
   savePhone(phone: string): void {
     this.customer.phone = phone;
-    // this.events.emit("customer:changed", this.customer);
+    this.emitChanges();
   }
 
   saveAddress(address: string): void {
     this.customer.address = address;
-    // this.events.emit("customer:changed", this.customer);
+    this.emitChanges();
   }
 
   getCustomerData(): IBuyer {
@@ -41,7 +41,7 @@ export class Customer {
       phone: "",
       address: "",
     };
-    // this.events.emit("customer:changed", this.customer);
+    this.emitChanges();
   }
 
   validateCustomerData(): TValidateErrors {
@@ -66,5 +66,30 @@ export class Customer {
     this.events.emit("customer:validated", errors);
 
     return errors;
+  }
+
+  startCheckout(): void {
+    this.events.emit("order:paymentRequested", this.getCustomerData());
+  }
+
+  submitPaymentData(): void {
+    const errors = this.validateCustomerData();
+
+    if (!errors.payment && !errors.address) {
+      this.events.emit("order:contactsRequested", this.getCustomerData());
+    }
+  }
+
+  submitContactsData(): void {
+    const errors = this.validateCustomerData();
+
+    if (!errors.email && !errors.phone) {
+      this.events.emit("order:submitReady", this.getCustomerData());
+    }
+  }
+
+  private emitChanges(): void {
+    this.events.emit("customer:changed", this.getCustomerData());
+    this.validateCustomerData();
   }
 }

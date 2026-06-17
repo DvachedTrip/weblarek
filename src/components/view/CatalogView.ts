@@ -10,9 +10,6 @@ export class CatalogView extends Component<ICatalogView> {
   }
 
   set catalog(value: HTMLElement[]) {
-    this.container.innerHTML = "";
-    value.forEach((item) => {
-      this.container.appendChild(item);
-    });
+    this.container.replaceChildren(...value);
   }
 }

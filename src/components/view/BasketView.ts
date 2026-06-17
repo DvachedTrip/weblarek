@@ -5,6 +5,7 @@ import { IEvents } from "../base/Events.ts";
 interface IBasketView {
   products: HTMLElement[];
   total: string;
+  checkoutDisabled: boolean;
 }
 
 export class BascetView extends Component<IBasketView> {

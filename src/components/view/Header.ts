@@ -30,7 +30,7 @@ export class Header extends Component<IHeader> {
     });
   }
 
-  set сounter(value: number) {
+  set counter(value: number) {
     this.counterElement.textContent = String(value);
   }
 }

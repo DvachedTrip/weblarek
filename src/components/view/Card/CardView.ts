@@ -3,7 +3,6 @@ import { Component } from "../../base/Component.ts";
 import { IProduct } from "@/types/index.ts";
 
 export interface ICard {
-  id: IProduct["id"];
   title: IProduct["title"];
   price: IProduct["price"];
 }
@@ -11,7 +10,6 @@ export interface ICard {
 export abstract class CardView<T extends ICard> extends Component<T> {
   protected titleElement: HTMLElement;
   protected priceElement: HTMLElement;
-  protected productId: string = "";
 
   constructor(container: HTMLElement) {
     super(container);
@@ -31,10 +29,6 @@ export abstract class CardView<T extends ICard> extends Component<T> {
 
   set price(value: number | null) {
     this.priceElement.textContent =
-      value !== null ? `${value} синапсов` : "Нет в наличии";
-  }
-
-  set id(value: string) {
-    this.productId = value;
+      value !== null ? `${value} синапсов` : "Бесценно";
   }
 }

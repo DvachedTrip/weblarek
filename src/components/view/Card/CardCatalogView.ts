@@ -1,6 +1,5 @@
 import { ensureElement } from "@/utils/utils.ts";
 import { CardView } from "./CardView.ts";
-import { IEvents } from "@/components/base/Events.ts";
 import { categoryMap } from "@/utils/constants";
 import { ICard } from "./CardView.ts";
 import { IProduct } from "@/types/index.ts";
@@ -10,14 +9,15 @@ interface ICardCatalog extends ICard {
   category: IProduct["image"];
 }
 
+interface ICardCatalogActions {
+  onClick?: () => void;
+}
+
 export class CardCatalogView extends CardView<ICardCatalog> {
   protected categoryElement: HTMLElement;
   protected imageElement: HTMLImageElement;
 
-  constructor(
-    container: HTMLElement,
-    protected events: IEvents,
-  ) {
+  constructor(container: HTMLElement, actions?: ICardCatalogActions) {
     super(container);
 
     this.categoryElement = ensureElement<HTMLElement>(
@@ -28,9 +28,10 @@ export class CardCatalogView extends CardView<ICardCatalog> {
       ".card__image",
       this.container,
     );
-    this.container.addEventListener("click", () => {
-      this.events.emit("product:select", { id: this.productId });
-    });
+
+    if (actions?.onClick) {
+      this.container.addEventListener("click", actions.onClick);
+    }
   }
 
   set category(value: string) {

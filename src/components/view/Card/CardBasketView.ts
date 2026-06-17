@@ -1,20 +1,20 @@
 import { ensureElement } from "@/utils/utils.ts";
 import { CardView } from "./CardView.ts";
-import { IEvents } from "@/components/base/Events.ts";
 import { ICard } from "./CardView.ts";
 
 interface ICardBasket extends ICard {
   index: number;
 }
 
+interface ICardBasketActions {
+  onDelete?: () => void;
+}
+
 export class CardBasketView extends CardView<ICardBasket> {
   protected indexElement: HTMLElement;
   protected deleteButton: HTMLButtonElement;
 
-  constructor(
-    container: HTMLElement,
-    protected events: IEvents,
-  ) {
+  constructor(container: HTMLElement, actions?: ICardBasketActions) {
     super(container);
     this.indexElement = ensureElement<HTMLElement>(
       ".basket__item-index",
@@ -25,11 +25,9 @@ export class CardBasketView extends CardView<ICardBasket> {
       this.container,
     );
 
-    this.deleteButton.addEventListener("click", () => {
-      this.events.emit("product:delete", {
-        id: this.productId,
-      });
-    });
+    if (actions?.onDelete) {
+      this.deleteButton.addEventListener("click", actions.onDelete);
+    }
   }
 
   set index(value: number) {
