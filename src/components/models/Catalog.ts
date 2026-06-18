@@ -5,11 +5,11 @@ export class Catalog {
   private products: IProduct[] = [];
   private selectedProduct: IProduct | null = null;
 
-  constructor(private events?: IEvents) {}
+  constructor(private events: IEvents) {}
 
   public setProducts(products: IProduct[]): void {
     this.products = products;
-    this.events?.emit("catalog:changed", this.products);
+    this.events.emit("catalog:changed");
   }
 
   public getProducts(): IProduct[] {
@@ -22,7 +22,7 @@ export class Catalog {
 
   public setSelectedProduct(selectedProduct: IProduct): void {
     this.selectedProduct = selectedProduct;
-    this.events?.emit("catalog:selected", this.selectedProduct);
+    this.events.emit("catalog:selected");
   }
 
   public getSelectedProduct(): IProduct | null {

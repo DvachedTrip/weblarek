@@ -12,22 +12,22 @@ export class Customer {
 
   savePaymentMethod(paymentMethod: TPayment): void {
     this.customer.payment = paymentMethod;
-    this.emitChanges();
+    this.events.emit("customer:changed");
   }
 
   saveEmail(email: string): void {
     this.customer.email = email;
-    this.emitChanges();
+    this.events.emit("customer:changed");
   }
 
   savePhone(phone: string): void {
     this.customer.phone = phone;
-    this.emitChanges();
+    this.events.emit("customer:changed");
   }
 
   saveAddress(address: string): void {
     this.customer.address = address;
-    this.emitChanges();
+    this.events.emit("customer:changed");
   }
 
   getCustomerData(): IBuyer {
@@ -41,7 +41,7 @@ export class Customer {
       phone: "",
       address: "",
     };
-    this.emitChanges();
+    this.events.emit("customer:changed");
   }
 
   validateCustomerData(): TValidateErrors {
@@ -63,33 +63,6 @@ export class Customer {
       errors.address = "Укажите адрес";
     }
 
-    this.events.emit("customer:validate", errors);
-
     return errors;
-  }
-
-  startCheckout(): void {
-    this.events.emit("order:paymentRequested", this.getCustomerData());
-  }
-
-  submitPaymentData(): void {
-    const errors = this.validateCustomerData();
-
-    if (!errors.payment && !errors.address) {
-      this.events.emit("order:contactsRequested", this.getCustomerData());
-    }
-  }
-
-  submitContactsData(): void {
-    const errors = this.validateCustomerData();
-
-    if (!errors.email && !errors.phone) {
-      this.events.emit("order:submitReady", this.getCustomerData());
-    }
-  }
-
-  private emitChanges(): void {
-    this.events.emit("customer:changed", this.getCustomerData());
-    this.validateCustomerData();
   }
 }

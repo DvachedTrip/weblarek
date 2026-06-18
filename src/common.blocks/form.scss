@@ -11,6 +11,10 @@
     flex-grow: 1;
   }
 
+  &__errors {
+    white-space: pre-line;
+  }
+
   &__input {
     background: transparent;
     color: white;

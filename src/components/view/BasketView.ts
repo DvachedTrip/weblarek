@@ -32,7 +32,7 @@ export class BascetView extends Component<IBasketView> {
     );
 
     this.checkoutButton.addEventListener("click", () => {
-      this.events.emit("basket:checkout");
+      this.events.emit("basket:checkoutClick");
     });
   }
 

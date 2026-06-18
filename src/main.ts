@@ -1,5 +1,5 @@
 import { Api } from "./components/base/Api";
-import { Cart, ICartChanged } from "./components/models/Cart";
+import { Cart } from "./components/models/Cart";
 import { Customer } from "./components/models/Customer";
 import { ApiLarek } from "./components/сommunication/ApiLarek";
 import { API_URL, CDN_URL } from "./utils/constants";
@@ -50,15 +50,7 @@ const basketElement = cloneTemplate<HTMLElement>(basketTemplate);
 
 const cardPreview = new CardDescriptionView(cardPreviewElement, {
   onClick: () => {
-    const product = catalog.getSelectedProduct();
-
-    if (!product || product.price === null) return;
-
-    const eventName = cart.isInCart(product.id)
-      ? "product:delete"
-      : "product:buy";
-
-    events.emit(eventName, { id: product.id });
+    events.emit("preview:click");
   },
 });
 const basketView = new BascetView(basketElement, events);
@@ -88,7 +80,7 @@ function renderCatalog(products: IProduct[]): void {
       cloneTemplate<HTMLElement>(cardCatalogTemplate),
       {
         onClick: () => {
-          events.emit("product:select", { id: product.id });
+          events.emit("catalog:cardClick", { id: product.id });
         },
       },
     );
@@ -128,17 +120,18 @@ function renderProductPreview(product: IProduct): void {
   });
   renderPreviewButton(product);
 
-  modal.render({ content: cardPreviewElement });
+  modal.render({ content: cardPreview.render() });
   modal.open();
 }
 
-function renderBasket(data: ICartChanged): void {
-  const cartItems = data.products.map((product, index) => {
+function renderBasket(): HTMLElement {
+  const products = cart.getCart();
+  const cartItems = products.map((product, index) => {
     const cartItem = new CardBasketView(
       cloneTemplate<HTMLElement>(cardBasketTemplate),
       {
         onDelete: () => {
-          events.emit("product:delete", { id: product.id });
+          events.emit("basket:itemDeleteClick", { id: product.id });
         },
       },
     );
@@ -150,45 +143,65 @@ function renderBasket(data: ICartChanged): void {
     });
   });
 
-  basketView.render({
+  return basketView.render({
     products: cartItems,
-    total: data.total.toString(),
-    checkoutDisabled: data.products.length === 0,
+    total: cart.getAllPrice().toString(),
+    checkoutDisabled: products.length === 0,
   });
 }
 
 function openBasket(): void {
-  modal.render({ content: basketElement });
+  modal.render({ content: renderBasket() });
   modal.open();
 }
 
-function renderPaymentForm(customerData: IBuyer): void {
+function openPaymentForm(): void {
   modal.render({
-    content: formPayment.render({
-      payment: customerData.payment,
-      address: customerData.address,
-    }),
+    content: formPayment.render(),
   });
   modal.open();
 }
 
-function renderContactsForm(customerData: IBuyer): void {
+function openContactsForm(): void {
   modal.render({
-    content: formContacts.render({
-      email: customerData.email,
-      phone: customerData.phone,
-    }),
+    content: formContacts.render(),
   });
+  modal.open();
 }
 
-function renderCustomerData(customerData: IBuyer): void {
+function getErrorsText(errors: Array<string | undefined>): string {
+  return errors.filter(Boolean).join("\n");
+}
+
+function renderCustomerData(
+  customerData: IBuyer,
+  errors: TValidateErrors,
+): void {
+  const isPaymentFilled = !errors.payment;
+  const isAddressFilled = !errors.address;
+  const isEmailFilled = !errors.email;
+  const isPhoneFilled = !errors.phone;
+
   formPayment.render({
     payment: customerData.payment,
     address: customerData.address,
+    valid: isPaymentFilled && isAddressFilled,
+    error: getErrorsText([errors.payment, errors.address]),
   });
+
   formContacts.render({
     email: customerData.email,
     phone: customerData.phone,
+    valid: isEmailFilled && isPhoneFilled,
+    error: getErrorsText([errors.email, errors.phone]),
+  });
+}
+
+function renderOrderSuccess(total: number): void {
+  modal.render({
+    content: finishForm.render({
+      total: String(total),
+    }),
   });
 }
 
@@ -203,22 +216,30 @@ async function submitOrder(customerData: IBuyer): Promise<void> {
     items: productsId,
   };
 
-  const response = await apiLarek.postOrder(customerOrderPost);
+  try {
+    const response = await apiLarek.postOrder(customerOrderPost);
 
-  cart.clearCart();
-  customer.clearCustomerData();
-  events.emit("order:success", { total: response.total });
+    cart.clearCart();
+    customer.clearCustomerData();
+    renderOrderSuccess(response.total);
+  } catch (error) {
+    console.error("Не удалось оформить заказ:", error);
+  }
 }
 
-events.on("catalog:changed", (products: IProduct[]) => {
-  renderCatalog(products);
+events.on("catalog:changed", () => {
+  renderCatalog(catalog.getProducts());
 });
 
-events.on("catalog:selected", (product: IProduct) => {
-  renderProductPreview(product);
+events.on("catalog:selected", () => {
+  const product = catalog.getSelectedProduct();
+
+  if (product) {
+    renderProductPreview(product);
+  }
 });
 
-events.on("product:select", ({ id }: { id: string }) => {
+events.on("catalog:cardClick", ({ id }: { id: string }) => {
   const product = catalog.findSelectedProducts(id);
 
   if (product) {
@@ -230,42 +251,39 @@ events.on("modal:closeButtonClick", () => {
   modal.close();
 });
 
-events.on("basket:open", openBasket);
+events.on("basket:openClick", openBasket);
 
-events.on("product:buy", ({ id }: { id: string }) => {
-  const product = catalog.findSelectedProducts(id);
+events.on("preview:click", () => {
+  const product = catalog.getSelectedProduct();
 
-  if (product) {
+  if (!product || product.price === null) return;
+
+  if (cart.isInCart(product.id)) {
+    cart.delProduct(product.id);
+  } else {
     cart.addProduct(product);
   }
-});
 
-events.on("product:delete", ({ id }: { id: string }) => {
-  cart.delProduct(id);
   modal.close();
 });
 
-events.on("cart:changed", (data: ICartChanged) => {
-  header.counter = data.quantity;
-  renderBasket(data);
+events.on("basket:itemDeleteClick", ({ id }: { id: string }) => {
+  cart.delProduct(id);
+});
+
+events.on("cart:changed", () => {
+  header.counter = cart.getQuantity();
+  renderBasket();
 
   const selectedProduct = catalog.getSelectedProduct();
 
   if (selectedProduct) {
     renderPreviewButton(selectedProduct);
   }
-
-  if (data.action === "add") {
-    modal.close();
-  }
 });
 
-events.on("basket:checkout", () => {
-  customer.startCheckout();
-});
-
-events.on("order:paymentRequested", (customerData: IBuyer) => {
-  renderPaymentForm(customerData);
+events.on("basket:checkoutClick", () => {
+  openPaymentForm();
 });
 
 events.on("payment:change", ({ payment }: { payment: TPayment }) => {
@@ -281,37 +299,16 @@ events.on(
   },
 );
 
-events.on("customer:changed", (customerData: IBuyer) => {
-  renderCustomerData(customerData);
-});
-
-events.on("customer:validate", (errors: TValidateErrors) => {
-  const isPaymentFilled = !errors.payment;
-  const isAddressFilled = !errors.address;
-  const isEmailFilled = !errors.email;
-  const isPhoneFilled = !errors.phone;
-
-  formPayment.render({
-    valid: isPaymentFilled && isAddressFilled,
-    error: !isPaymentFilled
-      ? errors.payment
-      : !isAddressFilled
-        ? errors.address
-        : "",
-  });
-
-  formContacts.render({
-    valid: isEmailFilled && isPhoneFilled,
-    error: !isEmailFilled ? errors.email : !isPhoneFilled ? errors.phone : "",
-  });
+events.on("customer:changed", () => {
+  renderCustomerData(customer.getCustomerData(), customer.validateCustomerData());
 });
 
 events.on("order:submit", () => {
-  customer.submitPaymentData();
-});
+  const errors = customer.validateCustomerData();
 
-events.on("order:contactsRequested", (customerData: IBuyer) => {
-  renderContactsForm(customerData);
+  if (!errors.payment && !errors.address) {
+    openContactsForm();
+  }
 });
 
 events.on(
@@ -323,29 +320,20 @@ events.on(
 );
 
 events.on("contacts:submit", () => {
-  customer.submitContactsData();
+  const errors = customer.validateCustomerData();
+
+  if (!errors.email && !errors.phone) {
+    submitOrder(customer.getCustomerData());
+  }
 });
 
-events.on("order:submitReady", (customerData: IBuyer) => {
-  submitOrder(customerData).catch((error) => {
-    console.error("Не удалось оформить заказ:", error);
-  });
-});
-
-events.on("order:success", ({ total }: { total: number }) => {
-  modal.render({
-    content: finishForm.render({
-      total: String(total),
-    }),
-  });
-});
-
-events.on("finishBuy:close", () => {
+events.on("finishBuy:closeClick", () => {
   modal.close();
 });
 
-cart.notifyChanges();
-customer.validateCustomerData();
+header.counter = cart.getQuantity();
+renderBasket();
+renderCustomerData(customer.getCustomerData(), customer.validateCustomerData());
 
 apiLarek
   .getProducts()

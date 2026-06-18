@@ -26,7 +26,7 @@ export class FinishBuyViews extends Component<FinishBuyInterface> {
     );
 
     this.closeButton.addEventListener("click", () => {
-      this.events.emit("finishBuy:close");
+      this.events.emit("finishBuy:closeClick");
     });
   }
 

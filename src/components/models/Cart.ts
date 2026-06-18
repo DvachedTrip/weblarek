@@ -1,17 +1,10 @@
 import { IProduct } from "@/types/index";
 import { IEvents } from "../base/Events";
 
-export interface ICartChanged {
-  products: IProduct[];
-  total: number;
-  quantity: number;
-  action?: "add" | "delete" | "clear";
-}
-
 export class Cart {
   private products: IProduct[] = [];
 
-  constructor(private events?: IEvents) {}
+  constructor(private events: IEvents) {}
 
   getCart(): IProduct[] {
     return [...this.products];
@@ -19,17 +12,17 @@ export class Cart {
 
   addProduct(product: IProduct): void {
     this.products.push(product);
-    this.emitChanges("add");
+    this.events.emit("cart:changed");
   }
 
   delProduct(id: string): void {
     this.products = this.products.filter((product) => product.id !== id);
-    this.emitChanges("delete");
+    this.events.emit("cart:changed");
   }
 
   clearCart(): void {
     this.products = [];
-    this.emitChanges("clear");
+    this.events.emit("cart:changed");
   }
 
   getAllPrice(): number {
@@ -44,18 +37,5 @@ export class Cart {
 
   isInCart(id: string): boolean {
     return this.products.some((product) => product.id === id);
-  }
-
-  notifyChanges(): void {
-    this.emitChanges();
-  }
-
-  private emitChanges(action?: ICartChanged["action"]): void {
-    this.events?.emit("cart:changed", {
-      products: this.getCart(),
-      total: this.getAllPrice(),
-      quantity: this.getQuantity(),
-      action,
-    });
   }
 }
