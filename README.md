@@ -2,6 +2,19 @@
 
 Стек: HTML, SCSS, TS, Vite
 
+## Скриншоты
+
+<p align="center">
+  <img src="screenshots/homePage.png" alt="Home" width="300" />
+  <img src="screenshots/cart.png" alt="Cart" width="300" />
+  <img src="screenshots/finish.png" alt="Finish" width="300" />
+</p>
+
+<p align="center">
+  <img src="screenshots/form1.png" alt="Form 1" width="300" />
+  <img src="screenshots/form2.png" alt="Form 2" width="300" />
+</p>
+
 Структура проекта:
 
 - src/ — исходные файлы проекта
